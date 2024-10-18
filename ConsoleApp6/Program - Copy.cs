@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace ConsoleApp6
@@ -44,10 +46,49 @@ namespace ConsoleApp6
 
         public MyDate(int day, int month, int year, string dayOfWeek)
         {
-            _year = year;
-            _month = month;
-            _day = day;
-            _day_of_week = dayOfWeek;
+            try
+            {
+                if (day > 31)
+                {
+                    throw new Exception("Неверное кол-во дней!");
+                }
+                else
+                    _day = day;
+
+                if (month < 1 || month > 12)
+                {
+                    throw new Exception("Неверное кол-во месяцев!");
+                }
+                else
+                    _month = month;
+
+                _year = year;
+
+                if (dayOfWeek == null)
+                {
+                    throw new Exception("Незаполненное поле!");
+                }
+                else if (Regex.IsMatch(dayOfWeek, @"[^a-zA-Z0-9]")) // проверка на спецсимволы
+                {
+                    throw new Exception("Данные содержат специальные символы!");
+                }
+                else
+                {
+                    for (int i = 0; i < dayOfWeek.Length; i++)
+                    {
+                        if (char.IsDigit(dayOfWeek[i]))
+                        {
+                            throw new Exception("Вы использовали цифры!");
+                        }
+                    }
+
+                    _day_of_week = dayOfWeek;
+                }
+
+            }
+            catch (Exception ex) { 
+                Console.WriteLine(ex.Message);
+            }
         }
 
         int GetDaysInMonth(int month)
@@ -73,7 +114,7 @@ namespace ConsoleApp6
                     return 28;
 
                 default:
-                    throw new ArgumentOutOfRangeException("Invalid month");
+                    throw new ArgumentOutOfRangeException("Неверный месяц!");
             }
         }
 
@@ -82,34 +123,6 @@ namespace ConsoleApp6
         {
             Console.WriteLine($"Date: {Day}/{this.Month}/{this.Year}");
         }
-
-        //public int getDifference(MyDate date2)
-        //{
-        //    int newYear = this.Year - date2.Year;
-        //    int newMonth = this.Month - date2.Month;
-        //    int new_day = this.Day - date2._day;
-
-        //    // Если дни меньше, переносим из предыдущего месяца
-        //    if (new_day < 0)
-        //    {
-        //        // Получаем количество дней в предыдущем месяце
-        //        int daysInPreviousMonth = GetDaysInMonth(this.Month - 1);
-        //        new_day += daysInPreviousMonth;
-        //        newMonth -= 1;
-        //    }
-
-        //    // Если месяцы меньше, переносим из предыдущего года
-        //    if (newMonth < 0)
-        //    {
-        //        newMonth += 12;
-        //        newYear -= 1;
-        //    }
-
-        //    // Рассчитываем общее количество дней
-        //    int total_days = newYear * 365 + newMonth * 30 + new_day;
-
-        //    return total_days;
-        //}
 
 
         public int getDifference(MyDate date2)
@@ -159,17 +172,31 @@ namespace ConsoleApp6
 
         public void changeDate(int days)
         {
-            this.Day += days;
-
-            while (this.Day > this.GetDaysInMonth(this.Month))
+            try
             {
-                this.Day -= this.GetDaysInMonth(this.Month);
-                this.Month++;
-                if(this.Month > 12)
+                if (days < 0)
                 {
-                    this.Year += 1;
-                    this.Month -= 12;
+                    throw new Exception("Введено неправильное кол-во дней!");
                 }
+                else
+                {
+                    this.Day += days;
+
+                    while (this.Day > this.GetDaysInMonth(this.Month))
+                    {
+                        this.Day -= this.GetDaysInMonth(this.Month);
+                        this.Month++;
+                        if (this.Month > 12)
+                        {
+                            this.Year += 1;
+                            this.Month -= 12;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
             }
         }
 
